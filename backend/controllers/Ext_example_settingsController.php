@@ -23,7 +23,8 @@ class Ext_example_settingsController extends Controller
         $request = Yii::app()->request;
         $notify  = Yii::app()->notify;
 
-        $model = new ExtCommon();
+        $model = new ExampleExtCommon();
+
         $model->populate();
 
         if ($request->isPostRequest) {

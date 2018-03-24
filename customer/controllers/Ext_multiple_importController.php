@@ -4,7 +4,7 @@
  * Controller file for settings.
  */
 
-class Multiple_importController extends Controller
+class Ext_multiple_importController extends Controller
 {
     // the extension instance
     public $extension;
@@ -23,14 +23,14 @@ class Multiple_importController extends Controller
 
         $import  = new ListCsvImport('upload');
 
-//        $this->setData(array(
-//            'pageMetaTitle'    => $this->data->pageMetaTitle . ' | '. $this->extension->t('Example'),
-//            'pageHeading'      => $this->extension->t('Example'),
-//            'pageBreadcrumbs'  => array(
-//                Yii::t('app', 'Extensions') => $this->createUrl('extensions/index'),
-//                $this->extension->t('Example') => $this->createUrl('ext_example_settings/index'),
-//            )
-//        ));
+        $this->setData(array(
+            'pageMetaTitle'    => $this->data->pageMetaTitle . ' | '. $this->extension->t('import'),
+            'pageHeading'      => $this->extension->t('import'),
+            'pageBreadcrumbs'  => array(
+                Yii::t('app', 'Extensions') => $this->createUrl('multiple/import'),
+                $this->extension->t('Example') => $this->createUrl('multiple/import'),
+            )
+        ));
 
         $this->render('index',compact('import'));
     }
@@ -65,7 +65,7 @@ class Multiple_importController extends Controller
 
 
         $file_name = $data['name'];
-        $model = new ExtCommon();
+        $model = new ExampleExtCommon();
         $model->populate();
         $number = $model->dummy_setting;
         $match = str_split($file_name,$number)[0];

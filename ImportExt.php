@@ -136,14 +136,16 @@ class ImportExt extends ExtensionInit
             Yii::app()->hooks->addAction('customer_controller_list_page_before_action', array($this, '_loadCustomerAssets'));
 
             Yii::app()->urlManager->addRules(array(
-                array('multiple_import/index', 'pattern'    => 'multiple/import'),
-                array('multiple_import/<action>', 'pattern' => 'multiple/import/index/*'),
+                array('ext_multiple_import/index', 'pattern'    => 'multiple/import'),
+                array('ext_multiple_import/import', 'pattern'    => 'multiple/import/import'),
+                array('ext_multiple_import/<action>', 'pattern' => 'multiple/import/index/*'),
             ));
 
-            Yii::app()->controllerMap['multiple_import'] = array(
-                'class'     => 'ext-import.customer.controllers.multiple_importController',
+            Yii::app()->controllerMap['ext_multiple_import'] = array(
+                'class'     => 'ext-import.customer.controllers.Ext_multiple_importController',
                 'extension' => $this,
             );
+
             
             // let's add a dummy menu item
             Yii::app()->hooks->addFilter('customer_left_navigation_menu_items', function($menuItems) {
@@ -276,6 +278,10 @@ class ImportExt extends ExtensionInit
 
         // call parent
         parent::afterDelete();
+    }
+
+    public function removeremoveAllOptions(){
+
     }
 
     /**

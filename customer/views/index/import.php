@@ -198,6 +198,7 @@
                 var name = sendData[modelName].name;
                 console.log(name)
                 if(sendData[modelName].name==''){
+                        alert("done !");
                         return;
                 }
 

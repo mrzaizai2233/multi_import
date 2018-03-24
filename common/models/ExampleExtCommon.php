@@ -5,7 +5,7 @@
  *
  */
 
-class ExtCommon extends FormModel
+class ExampleExtCommon extends FormModel
 {
     public $enabled = 'no';
 
@@ -14,7 +14,8 @@ class ExtCommon extends FormModel
     public function rules()
     {
         $rules = array(
-            array('dummy_setting', 'safe'),
+            array('dummy_setting', 'numerical', 'integerOnly'=>true),
+
             array('enabled', 'in', 'range' => array_keys($this->getYesNoOptions())),
         );
         return CMap::mergeArray($rules, parent::rules());
@@ -24,7 +25,7 @@ class ExtCommon extends FormModel
     {
         $labels = array(
             'enabled'       => Yii::t('app', 'Enabled'),
-            'dummy_setting' => $this->getExtensionInstance()->t('Number char compare'),
+            'dummy_setting' => $this->getExtensionInstance()->t('Number compare with name'),
         );
         return CMap::mergeArray($labels, parent::attributeLabels());
     }
@@ -32,7 +33,7 @@ class ExtCommon extends FormModel
     public function attributePlaceholders()
     {
         $placeholders = array(
-            'dummy_setting' => 'Number char compare',
+            'dummy_setting' => 'Number compare with name',
         );
         return CMap::mergeArray($placeholders, parent::attributePlaceholders());
     }
@@ -41,7 +42,7 @@ class ExtCommon extends FormModel
     {
         $texts = array(
             'enabled'       => Yii::t('app', 'Whether the feature is enabled'),
-            'dummy_setting' => $this->getExtensionInstance()->t('Number char compare'),
+            'dummy_setting' => $this->getExtensionInstance()->t('Number compare with name'),
         );
         return CMap::mergeArray($texts, parent::attributeHelpTexts());
     }
@@ -68,14 +69,6 @@ class ExtCommon extends FormModel
 
     public function getExtensionInstance()
     {
-        return Yii::app()->extensionsManager->getExtensionInstance('example');
-    }
-
-    public function getYesNoOptions()
-    {
-        return array(
-            self::TEXT_YES  => ucfirst(Yii::t('app', self::TEXT_YES)),
-            self::TEXT_NO   => ucfirst(Yii::t('app', self::TEXT_NO)),
-        );
+        return Yii::app()->extensionsManager->getExtensionInstance('import');
     }
 }

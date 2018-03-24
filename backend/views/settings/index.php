@@ -52,7 +52,7 @@ if ($viewCollection->renderContent) {
                 <div class="clearfix"><!-- --></div>
                 <div class="form-group col-lg-2">
                     <?php echo $form->labelEx($model, 'enabled');?>
-                    <?php echo $form->dropDownList($model, 'enabled', $model->getYesNoOptions(), $model->getHtmlOptions('enabled')); ?>
+                    <?php echo $form->dropDownList($model, 'enabled', ['yes'=>'Yes','no'=>'No'], $model->getHtmlOptions('enabled')); ?>
                     <?php echo $form->error($model, 'enabled');?>
                 </div>
                 <div class="form-group col-lg-10">
