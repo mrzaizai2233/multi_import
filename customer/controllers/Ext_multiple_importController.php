@@ -28,7 +28,7 @@ class Ext_multiple_importController extends Controller
             'pageHeading'      => $this->extension->t('import'),
             'pageBreadcrumbs'  => array(
                 Yii::t('app', 'Extensions') => $this->createUrl('multiple/import'),
-                $this->extension->t('Example') => $this->createUrl('multiple/import'),
+                $this->extension->t('Import') => $this->createUrl('multiple/import'),
             )
         ));
 
@@ -44,19 +44,45 @@ class Ext_multiple_importController extends Controller
         $importAtOnce = (int)$options->get('system.importer.import_at_once', 50);
         $pause        = (int)$options->get('system.importer.pause', 1);
 
-        $files  = CUploadedFile::getInstances($import,'files');
-        $file_uploaded = [];
-        foreach ($files as $file) {
-            $import->file = $file;
-            if($import->upload()){
-                $file_uploaded[$import->file_name]=$file->name  ;
-            }
-        }
         $criteria = new CDbCriteria();
         $criteria->compare('customer_id', (int)$customer_id);
         $criteria->addNotInCondition('status', array(Lists::STATUS_PENDING_DELETE));
 
-        $sql = "SELECT *  FROM `mw_list` WHERE `name` LIKE 'EDM03%'";
+        $files  = CUploadedFile::getInstances($import,'files');
+        $file_uploaded = [];
+        $file_map = [];
+        $model = new ExampleExtCommon();
+        $model->populate();
+        $number = $model->dummy_setting;
+        foreach ($files as $file) {
+            $import->file = $file;
+            if($import->upload()){
+                $match = str_split($file->name,$number)[0];
+                $criteria->mergeWith( array(
+                    'condition' => 'name LIKE :match',
+                    'params'    => array(':match' => "$match%")
+                ));
+                $lists = Lists::model()->findAll($criteria);
+//                if(!$lists){
+//                    return $this->renderJson(array(
+//                        'result'  => 'error',
+//                        'message' => Yii::t('list_import', 'file '.''.' does not map to any List!')
+//                    ));
+//                }
+                if($lists){
+
+                    foreach ($lists as $list) {
+                        $file_uploaded[$import->file_name]['file_name']=$file->name;
+                        $file_uploaded[$import->file_name]['list_name']=$list->name;
+                        $file_uploaded[$import->file_name]['list_id']=$list->list_id;
+                        break;
+                    }
+
+                }
+            }
+        }
+
+
         if (!$request->isAjaxRequest) {
             return $this->render('import',compact('import','importAtOnce','pause','file_uploaded'));
         }
@@ -64,25 +90,11 @@ class Ext_multiple_importController extends Controller
         $data = $request->getPost('ListCsvImport',array());
 
 
-        $file_name = $data['name'];
-        $model = new ExampleExtCommon();
-        $model->populate();
-        $number = $model->dummy_setting;
-        $match = str_split($file_name,$number)[0];
-        $criteria->mergeWith( array(
-            'condition' => 'name LIKE :match',
-            'params'    => array(':match' => "$match%")
-        ));
-        $lists = Lists::model()->findAll($criteria);
-        if(!$lists){
-            return $this->renderJson(array(
-                'result'  => 'error',
-                'message' => Yii::t('list_import', 'file '.$file_name.' does not map to any List!')
-            ));
-        }
-        foreach ($lists as $list) {
+        $list_id = $data['list_id'];
+
+        $list = Lists::model()->findByPk($list_id);
+
             $this->csv($list,$import);
-        }
     }
 
     public function csv($list,$import)
@@ -547,12 +559,12 @@ class Ext_multiple_importController extends Controller
                     }
 
                     $subscriber = null;
-                    if (!empty($email)) {
-                        $subscriber = ListSubscriber::model()->findByAttributes(array(
-                            'list_id' => $list->list_id,
-                            'email'   => $email,
-                        ));
-                    }
+//                    if (!empty($email)) {
+//                        $subscriber = ListSubscriber::model()->findByAttributes(array(
+//                            'list_id' => $list->list_id,
+//                            'email'   => $email,
+//                        ));
+//                    }
 
                     if (empty($subscriber)) {
 

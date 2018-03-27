@@ -40,33 +40,83 @@
         </div>
         <div class="clearfix"><!-- --></div>
     </div>
-    <div class="box-body" id="csv-import" data-files='<?php echo CJSON::encode($file_uploaded) ?>' data-model="<?php echo $import->modelName;?>" data-pause="<?php echo (int)$pause;?>" data-iframe="<?php echo $this->createUrl('list_import/ping');?>" data-attributes='<?php echo CJSON::encode($import->attributes);?>'>
-        <span class="counters">
-            <?php echo Yii::t('list_import', 'From a total of {total} subscribers, so far {totalProcessed} have been processed, {successfullyProcessed} successfully and {errorProcessing} with errors. {percentage} completed. File imported {files}', array(
-                '{total}' => '<span class="total">0</span>',
-                '{totalProcessed}' => '<span class="total-processed">0</span>',
-                '{successfullyProcessed}' => '<span class="success">0</span>',
-                '{errorProcessing}' => '<span class="error">0</span>',
-                '{percentage}'  => '<span class="percentage">0%</span>',
-                '{files}'  => '<b><span class="files">0/0</span></b>',
-            ));?>
-        </span>
-        <div class="progress progress-striped active">
-            <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
-                <span class="sr-only">0% <?php echo Yii::t('app', 'Complete');?></span>
+    <div class="box-body" id="csv-import" data-files='' data-model="<?php echo $import->modelName;?>" data-pause="<?php echo (int)$pause;?>" data-iframe="<?php echo $this->createUrl('list_import/ping');?>" data-attributes='<?php echo CJSON::encode($import->attributes);?>'>
+        <div class="pre-import">
+            <form id="check_form">
+                <table class="table table-hover" style="width: 50%;margin: 0 auto">
+                    <thead>
+                    <tr>
+                        <th><?php echo Yii::t('list_import', 'File Name') ?></th>
+                        <th><?php echo Yii::t('list_import', 'List Name') ?></th>
+                        <th><?php echo Yii::t('list_import', 'Select') ?></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ( $file_uploaded as $key => $item) {?>
+                        <tr>
+                            <td><?php echo $item['file_name'] ?></td>
+                            <td><?php echo $item['list_name'] ?></td>
+                            <td><input type="checkbox" name="<?php echo $item['list_id'] ?>" value="<?php echo $key  ?>" checked></td>
+                        </tr>
+                    <?php } ?>
+
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td><button class="btn btn-primary btn-flat btn-confirm" type="button" >Confirm</button></td>
+                    </tr>
+
+                    </tfoot>
+                </table>
+            </form>
+        </div>
+        <div class="process-import" style="display:none">
+            <span class="counters">
+                <?php echo Yii::t('list_import', 'From a total of {total} subscribers, so far {totalProcessed} have been processed, {successfullyProcessed} successfully and {errorProcessing} with errors. {percentage} completed. File imported {files}', array(
+                    '{total}' => '<span class="total">0</span>',
+                    '{totalProcessed}' => '<span class="total-processed">0</span>',
+                    '{successfullyProcessed}' => '<span class="success">0</span>',
+                    '{errorProcessing}' => '<span class="error">0</span>',
+                    '{percentage}'  => '<span class="percentage">0%</span>',
+                    '{files}'  => '<b><span class="files">0/0</span></b>',
+                ));?>
+            </span>
+            <div class="progress progress-striped active">
+                <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                    <span class="sr-only">0% <?php echo Yii::t('app', 'Complete');?></span>
+                </div>
             </div>
+            <div class="alert alert-info log-info">
+                <?php echo Yii::t('list_import', 'The import process is starting, please wait...');?>
+            </div>
+            <div class="log-errors"></div>
         </div>
-        <div class="alert alert-info log-info">
-            <?php echo Yii::t('list_import', 'The import process is starting, please wait...');?>
-        </div>
-        <div class="log-errors"></div>
     </div>
     <div class="box-footer"></div>
 </div>
 
 <script>
     jQuery(document).ready(function($){
+        $('.btn-confirm').click(function(){
+            var $data = $('#check_form').serializeArray();
+            var $count =0 ;
+            var $files = [].reduce.call($data,function(result,value){
+                result[value.value] = value.name
+                $count++;
+                return result
+            },{})
+            if($count>0){
+                $('#csv-import').data('files',$files);
+                importer($('#csv-import'))
+                $('.pre-import').hide(300)
+                $('.process-import').show(300)
+            } else {
+                alert('No File Selected')
+            }
 
+        });
         // IMPORTER
         function importer($elem) {
             if (!$elem.length) {
@@ -164,20 +214,20 @@
                 if(count==1){
                     for (i in files){
                         if(files[i]!=''){
-                            sendData[modelName].name = files[i];
+                            sendData[modelName].list_id = files[i];
                             sendData[modelName]['file_name'] = i;
                             files[i]='';
                             $elem.data('file',files);
                             count=2;
                             break;
                         }
-
                     }
                 }
-                if(sendData[modelName].name ==''){
+                console.log(sendData[modelName]);
+                if(sendData[modelName].list_id ==''){
                     for (i in files){
-                        if(files[i]!=''){
-                            sendData[modelName].name = files[i];
+                        if(files[i]!='') {
+                            sendData[modelName].list_id = files[i];
                             sendData[modelName]['file_name'] = i;
                             files[i]='';
                             $elem.data('file',files);
@@ -195,9 +245,8 @@
                 }
 
 //                console.log(files)
-                var name = sendData[modelName].name;
-                console.log(name)
-                if(sendData[modelName].name==''){
+                var list_id = sendData[modelName].list_id;
+                if(sendData[modelName].list_id==''){
                         alert("done !");
                         return;
                 }
@@ -213,7 +262,7 @@
                             rows_count:0,
                             current_page:1,
                             is_first_batch:1,
-                            name:'',
+                            list_id:'',
                             file_name:''
                         };
 
@@ -222,7 +271,7 @@
 
                     } else if (json.result == 'success'){
                         if (json.attributes) {
-                            json.attributes.name = name;
+                            json.attributes.list_id = list_id;
                             setTimeout(function(){
                                 sendRequest(json.attributes);
                             }, pause);
@@ -232,11 +281,10 @@
                                     rows_count:0,
                                     current_page:1,
                                     is_first_batch:1,
-                                    name:'',
+                                    list_id:'',
                                     file_name:''
                                 };
                                 sendRequest(json.attributes);
-
                             }, pause);
                         }
 
@@ -278,7 +326,7 @@
         };
 
         // START IT
-        importer($('#csv-import'));
+//        importer($('#csv-import'));
         // ping page from within iframe
         (function(){
             if (!$('#ping').length || !window.opener) {

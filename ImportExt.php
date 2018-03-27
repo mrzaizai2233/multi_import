@@ -137,8 +137,8 @@ class ImportExt extends ExtensionInit
 
             Yii::app()->urlManager->addRules(array(
                 array('ext_multiple_import/index', 'pattern'    => 'multiple/import'),
-                array('ext_multiple_import/import', 'pattern'    => 'multiple/import/import'),
-                array('ext_multiple_import/<action>', 'pattern' => 'multiple/import/index/*'),
+                array('ext_multiple_import/import', 'pattern' => 'multiple/import/*'),
+                array('ext_multiple_import/<action>', 'pattern' => 'multiple/import/*'),
             ));
 
             Yii::app()->controllerMap['ext_multiple_import'] = array(
